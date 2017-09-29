@@ -230,6 +230,9 @@ func (w *WSEvents) Start() (bool, error) {
 		_, err = ws.Start()
 		if err == nil {
 			w.ws = ws
+			w.ws.OnReconnect = func() {
+				w.redoSubscriptions()
+			}
 			go w.eventListener()
 		}
 	}
@@ -335,8 +338,6 @@ func (w *WSEvents) eventListener() {
 			// before cleaning up the w.ws stuff
 			w.done <- true
 			return
-		case <-w.ws.ReconnectCh:
-			w.redoSubscriptions()
 		}
 	}
 }
